@@ -2,7 +2,7 @@
   "name": "把能量还给自己",
   "short_name": "节奏",
   "description": "每日生活节奏管理",
-  "start_url": "/index.html",
+  "start_url": "/my-rhythm/",
   "display": "standalone",
   "background_color": "#FAF9F6",
   "theme_color": "#FAF9F6",
