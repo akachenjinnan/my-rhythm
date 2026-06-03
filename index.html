@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="节奏">
+<meta name="theme-color" content="#FAF9F6" id="theme-meta">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>把能量还给自己</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400&family=Lora:ital,wght@0,400;1,400&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF9F6; --bg2:#F3F1EC; --bg3:#ECEAE3;
+  --green:#8FA68E; --gl:#D4E0D3; --gd:#5C7A5B;
+  --blue:#A8B5C1; --bl:#D8E2EA;
+  --warm:#C4A882; --wl:#EDE0CF;
+  --text:#3D3D3D; --t2:#7A7A7A; --t3:#AEAEAE;
+  --red:#D4907A; --rl:#F2DDD6;
+  --nb:#1C1C1E; --ns:#2C2C2E; --nt:#C8C4BC; --nt2:#6A6A6A;
+  --r:16px; --rsm:10px;
+  --tab:56px;
+  --sat:env(safe-area-inset-top);
+  --sab:env(safe-area-inset-bottom);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+html{height:100%;overflow:hidden}
+body{
+  font-family:'Noto Sans SC',sans-serif;
+  background:var(--bg); color:var(--text);
+  height:100%; overflow:hidden;
+  transition:background .6s,color .6s;
+  -webkit-font-smoothing:antialiased;
+}
+body.night{background:var(--nb);color:var(--nt)}
+
+/* ── APP SHELL ── */
+.app{
+  max-width:430px; margin:0 auto;
+  height:100%; display:flex; flex-direction:column;
+  position:relative; overflow:hidden;
+}
+
+/* ── SCROLLABLE CONTENT ── */
+.scroll{
+  flex:1; overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:calc(var(--tab) + var(--sab) + 24px);
+  padding-top:var(--sat);
+}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── PAGES ── */
+.page{display:none;flex-direction:column;min-height:100%}
+.page.active{display:flex;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TAB BAR ── */
+.tab-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  height:calc(var(--tab) + var(--sab));
+  background:rgba(250,249,246,.94);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:.5px solid rgba(0,0,0,.08);
+  display:flex; align-items:flex-start;
+  padding-top:6px;
+  z-index:100;
+  transition:background .6s;
+}
+body.night .tab-bar{background:rgba(28,28,30,.94);border-top-color:rgba(255,255,255,.07)}
+.ti{
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  gap:3px; cursor:pointer; padding:4px 0; user-select:none;
+  -webkit-user-select:none;
+}
+.ti-icon{font-size:23px;transition:transform .2s;line-height:1}
+.ti-label{font-size:10px;color:var(--t3);font-weight:300;transition:color .2s}
+.ti.active .ti-label{color:var(--gd)}
+.ti.active .ti-icon{transform:scale(1.1)}
+
+/* ── HEADER ── */
+.ph{padding:20px 20px 14px;display:flex;justify-content:space-between;align-items:flex-end}
+.ph-l{}
+.dl{font-size:11px;color:var(--t3);letter-spacing:.06em;font-weight:300;margin-bottom:5px}
+.gr{font-family:'Noto Serif SC',serif;font-size:20px;font-weight:300;line-height:1.45;transition:color .6s}
+body.night .gr{color:var(--nt)}
+.tl{font-size:11px;color:var(--t3);font-style:italic;font-family:'Lora',serif;margin-top:3px}
+
+/* edit btn */
+.edit-btn{
+  padding:6px 14px;border-radius:99px;border:1px solid var(--bg3);background:var(--bg2);
+  font-size:11px;color:var(--t2);font-family:'Noto Sans SC',sans-serif;font-weight:300;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:10px;margin-bottom:2px;
+  transition:all .2s; -webkit-appearance:none;
+}
+body.night .edit-btn{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:var(--nt2)}
+.edit-btn.on{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* ── STATUS STRIP ── */
+.ss{display:flex;gap:8px;padding:0 20px 18px}
+.sc{flex:1;background:var(--bg2);border-radius:var(--rsm);padding:10px 12px;transition:background .6s}
+body.night .sc{background:rgba(255,255,255,.05)}
+.sc .sl{font-size:10px;color:var(--t3);font-weight:300;margin-bottom:2px}
+.sc .sv{font-family:'Lora',serif;font-size:19px;color:var(--text);transition:color .6s}
+body.night .sc .sv{color:var(--nt)}
+.sc .su{font-size:10px;color:var(--t3);margin-left:1px}
+
+/* ── SECTION ── */
+.sec{padding:0 20px 14px}
+.sec-t{font-size:10px;letter-spacing:.12em;color:var(--t3);text-transform:uppercase;margin-bottom:9px}
+
+/* ── 3 THINGS ── */
+.tt{background:var(--bg2);border-radius:var(--r);padding:16px 18px;transition:background .6s}
+body.night .tt{background:rgba(255,255,255,.05)}
+.tt-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.tt-title{font-family:'Noto Serif SC',serif;font-size:14px;font-weight:300;color:var(--text);transition:color .6s}
+body.night .tt-title{color:var(--nt)}
+.calm-tag{font-size:10px;color:var(--gd);background:var(--gl);padding:3px 9px;border-radius:99px;cursor:pointer;border:none;font-family:'Noto Sans SC',sans-serif;-webkit-appearance:none}
+.tr{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:.5px solid rgba(0,0,0,.05)}
+body.night .tr{border-bottom-color:rgba(255,255,255,.05)}
+.tr:last-child{border-bottom:none;padding-bottom:0}
+.tn{font-family:'Lora',serif;font-size:14px;color:var(--t3);min-width:14px;font-style:italic}
+.tinput{flex:1;border:none;background:transparent;font-size:14px;color:var(--text);font-family:'Noto Sans SC',sans-serif;font-weight:300;outline:none;transition:color .6s;min-width:0;-webkit-appearance:none}
+body.night .tinput{color:var(--nt)}
+.tinput::placeholder{color:var(--t3);font-style:italic}
+.tinput.done{text-decoration:line-through;color:var(--t3)}
+.tchk{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;flex-shrink:0}
+.tchk.on{background:var(--green);border-color:var(--green)}
+.tchk.on::after{content:'';width:5px;height:9px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px);display:block}
+
+/* ── CHECK GROUP ── */
+.cg{background:var(--bg2);border-radius:var(--r);overflow:hidden;margin-bottom:10px;transition:background .6s}
+body.night .cg{background:rgba(255,255,255,.04)}
+.cg-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 9px}
+.cg-l{display:flex;align-items:center;gap:7px;flex:1;min-width:0}
+.cg-em{font-size:15px;flex-shrink:0}
+.cg-name{font-size:13px;font-weight:400;color:var(--text);transition:color .6s;min-width:0}
+body.night .cg-name{color:var(--nt)}
+.cg-name-inp{font-size:13px;font-weight:400;color:var(--text);border:none;background:transparent;font-family:'Noto Sans SC',sans-serif;outline:none;border-bottom:1px solid var(--green);flex:1;min-width:0;-webkit-appearance:none;transition:color .6s}
+body.night .cg-name-inp{color:var(--nt)}
+.cg-r{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.cg-prog{font-size:10px;color:var(--t3);white-space:nowrap}
+.more-btn{font-size:10px;color:var(--t3);padding:3px 8px;background:var(--bg3);border-radius:99px;cursor:pointer;border:none;font-family:'Noto Sans SC',sans-serif;transition:all .2s;white-space:nowrap;-webkit-appearance:none}
+body.night .more-btn{background:rgba(255,255,255,.08);color:var(--nt2)}
+.more-btn:active{background:var(--gl);color:var(--gd)}
+.pb-wrap{padding:0 18px 9px}
+.pb{height:2px;background:var(--bg3);border-radius:99px;overflow:hidden}
+body.night .pb{background:rgba(255,255,255,.08)}
+.pbf{height:100%;background:var(--green);border-radius:99px;transition:width .5s ease}
+.ci-wrap{padding:0 18px 10px}
+
+/* ── CHECK ITEM ── */
+.ci{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:.5px solid rgba(0,0,0,.04);cursor:pointer;min-height:44px}
+body.night .ci{border-bottom-color:rgba(255,255,255,.04)}
+.ci:last-child{border-bottom:none}
+.ci:active{opacity:.7}
+.ci-box{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--t3);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .25s}
+.ci-box.on{animation:pop .25s ease}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+.ci-box.on::after{content:'';width:4px;height:8px;border:1.5px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px);display:block}
+.ci-lbl{font-size:14px;color:var(--text);font-weight:300;flex:1;line-height:1.4;transition:color .6s}
+body.night .ci-lbl{color:var(--nt)}
+.ci.on .ci-lbl{color:var(--t3);text-decoration:line-through}
+
+/* edit mode */
+.ci-lbl-inp{font-size:14px;color:var(--text);font-weight:300;border:none;background:transparent;font-family:'Noto Sans SC',sans-serif;outline:none;flex:1;border-bottom:1px solid var(--bg3);-webkit-appearance:none;min-width:0;transition:color .6s}
+body.night .ci-lbl-inp{color:var(--nt);border-bottom-color:rgba(255,255,255,.1)}
+.core-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.core-wrap label{font-size:10px;color:var(--t3);white-space:nowrap}
+.core-wrap input[type=checkbox]{accent-color:var(--green);cursor:pointer;width:14px;height:14px}
+.ci-del{width:28px;height:28px;border-radius:50%;background:var(--rl);color:var(--red);border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;-webkit-appearance:none}
+.ci-del:active{background:#EABCB0}
+
+.add-row{display:flex;align-items:center;gap:8px;padding:8px 18px 12px;cursor:pointer;color:var(--t3);font-size:13px;font-weight:300;min-height:44px}
+.add-row:active{color:var(--gd)}
+.add-icon{width:20px;height:20px;border-radius:50%;border:1.5px dashed var(--t3);display:flex;align-items:center;justify-content:center;font-size:13px;line-height:1}
+
+.more-items{display:none}
+.more-items.open{display:block}
+
+/* ── STOP BTN ── */
+.stop-btn{margin:0 20px 16px;padding:15px 20px;background:var(--wl);border-radius:var(--r);cursor:pointer;border:none;width:calc(100% - 40px);text-align:left;-webkit-appearance:none;transition:background .2s}
+body.night .stop-btn{background:rgba(196,168,130,.12)}
+.stop-btn:active{background:#E8D9C4}
+.stop-lbl{font-size:10px;color:var(--warm);letter-spacing:.1em;margin-bottom:2px}
+.stop-txt{font-family:'Noto Serif SC',serif;font-size:15px;color:#8A6A4A;font-weight:300}
+body.night .stop-txt{color:var(--warm)}
+
+/* ── EMOTION ── */
+.emo-wrap{background:var(--bg2);border-radius:var(--r);padding:16px;transition:background .6s}
+body.night .emo-wrap{background:rgba(255,255,255,.04)}
+.emo-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}
+.emo-tag{padding:6px 12px;border-radius:99px;font-size:13px;cursor:pointer;border:1px solid var(--bg3);background:var(--bg);color:var(--t2);font-weight:300;transition:all .2s;font-family:'Noto Sans SC',sans-serif;-webkit-appearance:none;min-height:34px}
+body.night .emo-tag{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:var(--nt2)}
+.emo-tag.on{background:var(--bl);border-color:var(--blue);color:#3A5060}
+.emo-note{width:100%;border:none;background:var(--bg);border-radius:var(--rsm);padding:11px 13px;font-size:14px;color:var(--text);font-family:'Noto Sans SC',sans-serif;font-weight:300;outline:none;resize:none;min-height:66px;transition:background .6s,color .6s;-webkit-appearance:none}
+body.night .emo-note{background:rgba(255,255,255,.05);color:var(--nt)}
+.emo-note::placeholder{color:var(--t3);font-style:italic}
+.self-row{margin-top:9px;padding:10px 13px;background:var(--bg);border-radius:var(--rsm);display:flex;gap:8px;align-items:center;transition:background .6s}
+body.night .self-row{background:rgba(255,255,255,.05)}
+.self-lbl{font-size:11px;color:var(--t3);flex-shrink:0}
+.self-inp{flex:1;border:none;background:transparent;font-size:13px;color:var(--text);font-family:'Noto Sans SC',sans-serif;font-weight:300;outline:none;-webkit-appearance:none;min-width:0;transition:color .6s}
+body.night .self-inp{color:var(--nt)}
+.self-inp::placeholder{color:var(--t3);font-style:italic}
+
+/* ── NIGHT PAGE ── */
+.sleep-row{display:flex;gap:8px;margin-bottom:10px}
+.slp-f{flex:1;background:var(--bg2);border-radius:var(--rsm);padding:13px 14px;transition:background .6s}
+body.night .slp-f{background:rgba(255,255,255,.05)}
+.slp-f label{display:block;font-size:10px;color:var(--t3);margin-bottom:4px;font-weight:300}
+.slp-f input{width:100%;border:none;background:transparent;font-size:20px;color:var(--text);font-family:'Lora',serif;outline:none;-webkit-appearance:none;transition:color .6s}
+body.night .slp-f input{color:var(--nt)}
+.slp-dur{text-align:center;padding:8px 0}
+.dur-n{font-family:'Lora',serif;font-size:30px;color:var(--gd)}
+.dur-u{font-size:12px;color:var(--t3);margin-left:2px}
+.nq{background:var(--bg2);border-radius:var(--r);padding:16px;margin-bottom:10px;transition:background .6s}
+body.night .nq{background:rgba(255,255,255,.04)}
+.nq-lbl{font-size:10px;color:var(--t3);letter-spacing:.08em;margin-bottom:8px}
+.nq-ta{width:100%;border:none;background:transparent;font-size:14px;color:var(--text);font-family:'Noto Sans SC',sans-serif;font-weight:300;outline:none;resize:none;min-height:58px;line-height:1.7;-webkit-appearance:none;transition:color .6s}
+body.night .nq-ta{color:var(--nt)}
+.nq-ta::placeholder{color:var(--t3);font-style:italic}
+.close-btn{margin:4px 20px 0;padding:17px;background:var(--green);color:#fff;border:none;border-radius:var(--r);width:calc(100% - 40px);font-size:15px;font-family:'Noto Serif SC',serif;font-weight:300;cursor:pointer;letter-spacing:.05em;-webkit-appearance:none;transition:background .2s}
+.close-btn:active{background:var(--gd)}
+
+/* ── HISTORY PAGE ── */
+.hist-list{padding:0 20px}
+.hist-day{background:var(--bg2);border-radius:var(--r);margin-bottom:10px;overflow:hidden;transition:background .6s}
+body.night .hist-day{background:rgba(255,255,255,.04)}
+.hd-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;min-height:54px}
+.hd-date{font-family:'Lora',serif;font-size:15px;color:var(--text);transition:color .6s}
+body.night .hd-date{color:var(--nt)}
+.hd-meta{display:flex;align-items:center;gap:8px}
+.hd-emo{font-size:18px}
+.hd-pct{font-size:12px;color:var(--t3)}
+.hd-arrow{font-size:12px;color:var(--t3);transition:transform .2s}
+.hd-arrow.open{transform:rotate(90deg)}
+.hd-body{display:none;padding:0 16px 14px;border-top:.5px solid rgba(0,0,0,.05)}
+body.night .hd-body{border-top-color:rgba(255,255,255,.05)}
+.hd-body.open{display:block;animation:fadeUp .2s ease}
+.hd-sec{margin-top:12px}
+.hd-sec-t{font-size:10px;color:var(--t3);letter-spacing:.1em;margin-bottom:6px}
+.hd-thing{font-size:13px;color:var(--text);font-weight:300;padding:4px 0;display:flex;align-items:center;gap:7px;transition:color .6s}
+body.night .hd-thing{color:var(--nt)}
+.hd-thing.done{color:var(--t3);text-decoration:line-through}
+.hd-chips{display:flex;flex-wrap:wrap;gap:5px}
+.hd-chip{font-size:11px;padding:3px 9px;border-radius:99px;background:var(--gl);color:var(--gd)}
+.hd-chip.skip{background:var(--bg3);color:var(--t3)}
+.hd-note{font-size:13px;color:var(--t2);font-weight:300;line-height:1.6;font-style:italic;margin-top:4px}
+.hd-sleep{font-family:'Lora',serif;font-size:16px;color:var(--gd)}
+.empty-hist{text-align:center;padding:60px 20px;font-size:13px;color:var(--t3);font-style:italic;font-family:'Lora',serif}
+
+/* ── REVIEW PAGE ── */
+.hm-wrap{background:var(--bg2);border-radius:var(--r);padding:16px;transition:background .6s}
+body.night .hm-wrap{background:rgba(255,255,255,.04)}
+.hm-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-bottom:8px}
+.hm-cell{aspect-ratio:1;border-radius:3px;background:var(--bg3);transition:background .3s}
+body.night .hm-cell{background:rgba(255,255,255,.07)}
+.hm-cell.l1{background:#D4E0D3}.hm-cell.l2{background:#AECAAD}.hm-cell.l3{background:#8FA68E}.hm-cell.l4{background:#5C7A5B}
+.hm-leg{display:flex;align-items:center;gap:5px;justify-content:flex-end}
+.hm-leg span{font-size:10px;color:var(--t3)}
+.hm-sw{width:10px;height:10px;border-radius:2px}
+.wk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:12px}
+.wk-day{display:flex;flex-direction:column;align-items:center;gap:3px}
+.wd-lbl{font-size:10px;color:var(--t3);font-weight:300}
+.wd-dot{width:34px;height:34px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3);transition:background .3s}
+body.night .wd-dot{background:rgba(255,255,255,.07)}
+.wd-dot.has{background:var(--gl);color:var(--gd)}
+.wd-dot.today{border:1.5px solid var(--green)}
+.stat-row{display:flex;gap:8px;margin-bottom:8px}
+.st-card{flex:1;background:var(--bg2);border-radius:var(--rsm);padding:12px 14px;transition:background .6s}
+body.night .st-card{background:rgba(255,255,255,.04)}
+.st-card .stl{font-size:10px;color:var(--t3);margin-bottom:2px}
+.st-card .stv{font-family:'Lora',serif;font-size:19px;color:var(--text);transition:color .6s}
+body.night .st-card .stv{color:var(--nt)}
+.st-card .stu{font-size:10px;color:var(--t3);margin-left:1px}
+
+/* ── OVERLAYS ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(28,22,16,.7);z-index:200;align-items:center;justify-content:center;padding:32px 24px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.overlay.show{display:flex;animation:fadeUp .25s ease}
+.ov-card{background:var(--bg);border-radius:24px;padding:32px 24px;max-width:320px;width:100%;text-align:center}
+body.night .ov-card{background:var(--ns)}
+.breath{width:68px;height:68px;border-radius:50%;background:var(--gl);margin:0 auto 22px;animation:breathe 4s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.35);opacity:1}}
+.ov-msg{font-family:'Noto Serif SC',serif;font-size:18px;font-weight:300;color:var(--text);line-height:1.7;margin-bottom:8px;transition:color .6s}
+body.night .ov-msg{color:var(--nt)}
+.ov-sub{font-size:12px;color:var(--t3);font-style:italic;margin-bottom:24px}
+.ov-close{font-size:13px;color:var(--t3);cursor:pointer;padding:11px 24px;border:1px solid var(--bg3);border-radius:99px;background:transparent;font-family:'Noto Sans SC',sans-serif;-webkit-appearance:none;transition:all .2s;min-height:44px}
+.ov-close:active{background:var(--bg2)}
+
+.gn-overlay{display:none;position:fixed;inset:0;background:var(--nb);z-index:300;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px}
+.gn-overlay.show{display:flex;animation:fadeUp 1s ease}
+.gn-moon{font-size:52px;margin-bottom:28px}
+.gn-txt{font-family:'Noto Serif SC',serif;font-size:24px;font-weight:300;color:var(--nt);margin-bottom:10px;line-height:1.6}
+.gn-sub{font-size:13px;color:var(--nt2);font-style:italic;font-family:'Lora',serif;margin-bottom:8px}
+.gn-dismiss{margin-top:40px;font-size:13px;color:var(--nt2);cursor:pointer;padding:12px 30px;border:1px solid rgba(255,255,255,.12);border-radius:99px;background:transparent;font-family:'Noto Sans SC',sans-serif;-webkit-appearance:none;min-height:44px;transition:all .2s}
+.gn-dismiss:active{border-color:rgba(255,255,255,.3);color:var(--nt)}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;
+  bottom:calc(var(--tab) + var(--sab) + 14px);
+  left:50%;transform:translateX(-50%);
+  background:rgba(61,61,61,.92);color:#fff;
+  padding:9px 20px;border-radius:99px;
+  font-size:12px;font-weight:300;
+  z-index:500;opacity:0;transition:opacity .3s;
+  pointer-events:none;white-space:nowrap;
+  backdrop-filter:blur(8px);
+}
+body.night .toast{background:rgba(200,196,188,.9);color:var(--nb)}
+.toast.show{opacity:1}
+
+/* ── INSTALL BANNER ── */
+.install-banner{
+  display:none;
+  margin:0 20px 14px;
+  padding:14px 16px;
+  background:var(--gl);
+  border-radius:var(--r);
+  font-size:12px;color:var(--gd);
+  line-height:1.6;
+  position:relative;
+}
+.install-banner.show{display:block}
+.install-close{position:absolute;top:10px;right:12px;font-size:16px;cursor:pointer;color:var(--gd);line-height:1}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="scroll" id="scroll">
+
+  <!-- ══ TODAY ══ -->
+  <div class="page active" id="pg-today">
+    <div class="ph">
+      <div class="ph-l">
+        <div class="dl" id="date-line"></div>
+        <div class="gr" id="greeting"></div>
+        <div class="tl">今天的行动比昨天的焦虑更真实。</div>
+      </div>
+      <button class="edit-btn" id="edit-btn" onclick="toggleEdit()">编辑</button>
+    </div>
+
+    <!-- install hint -->
+    <div class="install-banner" id="install-banner">
+      <span class="install-close" onclick="this.parentElement.classList.remove('show')">×</span>
+      📲 点击底部分享按钮 → 「添加到主屏幕」，像 app 一样每天打开
+    </div>
+
+    <div class="ss">
+      <div class="sc"><div class="sl">今日完成</div><div class="sv"><span id="done-n">0</span><span class="su"> / <span id="total-n">0</span></span></div></div>
+      <div class="sc"><div class="sl">连续打卡</div><div class="sv"><span id="streak-n">0</span><span class="su"> 天</span></div></div>
+      <div class="sc"><div class="sl">此刻</div><div class="sv" id="mood-disp" style="font-size:22px">—</div></div>
+    </div>
+
+    <!-- 3 things -->
+    <div class="sec">
+      <div class="sec-t">今日最重要的三件事</div>
+      <div class="tt">
+        <div class="tt-head">
+          <div class="tt-title">先把这三件事做完。</div>
+          <button class="calm-tag" onclick="showCalm()">我在焦虑</button>
+        </div>
+        <div class="tr"><span class="tn">1</span><input class="tinput" placeholder="今天最重要的事…" data-i="0"><div class="tchk" data-i="0"></div></div>
+        <div class="tr"><span class="tn">2</span><input class="tinput" placeholder="第二重要的事…" data-i="1"><div class="tchk" data-i="1"></div></div>
+        <div class="tr"><span class="tn">3</span><input class="tinput" placeholder="第三件事…" data-i="2"><div class="tchk" data-i="2"></div></div>
+      </div>
+    </div>
+
+    <!-- checklist -->
+    <div class="sec">
+      <div class="sec-t">今日节奏</div>
+      <div id="groups-wrap"></div>
+    </div>
+
+    <!-- stop -->
+    <button class="stop-btn" onclick="showCalm()">
+      <div class="stop-lbl">当你开始转圈圈时</div>
+      <div class="stop-txt">停止过度思考 →</div>
+    </button>
+
+    <!-- emotion -->
+    <div class="sec">
+      <div class="sec-t">此刻感受</div>
+      <div class="emo-wrap">
+        <div class="emo-tags" id="emo-tags">
+          <div class="emo-tag" data-v="平静" onclick="selEmo(this)">平静</div>
+          <div class="emo-tag" data-v="充实" onclick="selEmo(this)">充实</div>
+          <div class="emo-tag" data-v="开心" onclick="selEmo(this)">开心</div>
+          <div class="emo-tag" data-v="疲惫" onclick="selEmo(this)">疲惫</div>
+          <div class="emo-tag" data-v="焦虑" onclick="selEmo(this)">焦虑</div>
+          <div class="emo-tag" data-v="混乱" onclick="selEmo(this)">混乱</div>
+          <div class="emo-tag" data-v="低落" onclick="selEmo(this)">低落</div>
+          <div class="emo-tag" data-v="期待" onclick="selEmo(this)">期待</div>
+        </div>
+        <textarea class="emo-note" id="emo-note" placeholder="想说什么都可以，只写给自己看…" rows="3" oninput="saveDayField()"></textarea>
+        <div class="self-row">
+          <span class="self-lbl">今天为自己做了</span>
+          <input class="self-inp" id="self-inp" placeholder="一件小事…" oninput="saveDayField()">
+        </div>
+      </div>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+
+  <!-- ══ NIGHT ══ -->
+  <div class="page" id="pg-night">
+    <div class="ph" style="padding-bottom:10px">
+      <div class="ph-l">
+        <div class="dl" id="night-dl"></div>
+        <div class="gr">关闭今天。</div>
+        <div class="tl">好好休息，明天继续。</div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">睡眠记录（今早填写）</div>
+      <div class="sleep-row">
+        <div class="slp-f"><label>昨晚几点睡</label><input type="text" id="sl-s" placeholder="如 23:30" oninput="calcSleep()" autocomplete="off" inputmode="numeric"></div>
+        <div class="slp-f"><label>今早几点醒</label><input type="text" id="sl-e" placeholder="如 07:00" oninput="calcSleep()" autocomplete="off" inputmode="numeric"></div>
+      </div>
+      <div class="slp-dur"><span class="dur-n" id="dur-n">—</span><span class="dur-u" id="dur-u"></span></div>
+      <div style="font-size:11px;color:var(--t3);font-style:italic;font-family:'Lora',serif;text-align:center;padding-bottom:4px">早上起来再填，晚上先关闭今天就好。</div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">今日关闭清单</div>
+      <div class="nq"><div class="nq-lbl">今天完成了什么</div><textarea class="nq-ta" id="nq-done" placeholder="哪怕只是一件小事，都算。" oninput="saveNight()"></textarea></div>
+      <div class="nq"><div class="nq-lbl">今天什么让我状态不错</div><textarea class="nq-ta" id="nq-good" placeholder="今天有什么让你觉得还好…" oninput="saveNight()"></textarea></div>
+      <div class="nq"><div class="nq-lbl">明天最重要的 3 件事</div><textarea class="nq-ta" id="nq-tmr" placeholder="只写 3 件，不要更多。" oninput="saveNight()"></textarea></div>
+    </div>
+    <button class="close-btn" onclick="closeDay()">今天结束了 ✦</button>
+    <div style="height:16px"></div>
+  </div>
+
+  <!-- ══ HISTORY ══ -->
+  <div class="page" id="pg-history">
+    <div class="ph" style="padding-bottom:10px">
+      <div class="ph-l">
+        <div class="dl">每一天</div>
+        <div class="gr">你留下的记录。</div>
+      </div>
+    </div>
+    <div class="hist-list" id="hist-list"></div>
+  </div>
+
+  <!-- ══ REVIEW ══ -->
+  <div class="page" id="pg-review">
+    <div class="ph" style="padding-bottom:10px">
+      <div class="ph-l">
+        <div class="dl">轨迹</div>
+        <div class="gr">每一天都留下了印记。</div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">过去 30 天</div>
+      <div class="hm-wrap">
+        <div class="hm-grid" id="heatmap"></div>
+        <div class="hm-leg"><span>少</span><div class="hm-sw" style="background:#D4E0D3"></div><div class="hm-sw" style="background:#AECAAD"></div><div class="hm-sw" style="background:#8FA68E"></div><div class="hm-sw" style="background:#5C7A5B"></div><span>多</span></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">本周睡眠</div>
+      <div class="wk-grid" id="wk-sleep"></div>
+      <div class="stat-row">
+        <div class="st-card"><div class="stl">平均睡眠</div><div class="stv"><span id="avg-sl">—</span><span class="stu">h</span></div></div>
+        <div class="st-card"><div class="stl">12点前入睡</div><div class="stv"><span id="b12">—</span><span class="stu">天</span></div></div>
+        <div class="st-card"><div class="stl">连续天数</div><div class="stv"><span id="str-rv">0</span><span class="stu">天</span></div></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">本周身体活动</div>
+      <div class="wk-grid" id="wk-body"></div>
+      <div style="padding:4px 0 2px;font-size:11px;color:var(--t3);font-style:italic;font-family:'Lora',serif">身体正在慢慢恢复，不用急。</div>
+    </div>
+    <div class="sec" style="padding-bottom:0">
+      <div class="sec-t">情绪回顾（本周）</div>
+      <div class="hm-wrap" id="emo-review"></div>
+    </div>
+    <div style="height:12px"></div>
+  </div>
+
+  </div><!-- /scroll -->
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <div class="ti active" onclick="switchTab('today',this)" id="tab-today"><div class="ti-icon">🌿</div><div class="ti-label">今日</div></div>
+    <div class="ti" onclick="switchTab('night',this)" id="tab-night"><div class="ti-icon">🌙</div><div class="ti-label">关闭今天</div></div>
+    <div class="ti" onclick="switchTab('history',this)" id="tab-history"><div class="ti-icon">📖</div><div class="ti-label">历史</div></div>
+    <div class="ti" onclick="switchTab('review',this)" id="tab-review"><div class="ti-icon">🌱</div><div class="ti-label">轨迹</div></div>
+  </div>
+</div><!-- /app -->
+
+<!-- CALM -->
+<div class="overlay" id="calm-ov">
+  <div class="ov-card">
+    <div class="breath"></div>
+    <div class="ov-msg" id="calm-msg"></div>
+    <div class="ov-sub">跟着圆慢慢呼吸。</div>
+    <button class="ov-close" onclick="closeOv('calm-ov')">好了，我回来了</button>
+  </div>
+</div>
+
+<!-- GOODNIGHT -->
+<div class="gn-overlay" id="gn-ov">
+  <div class="gn-moon">🌙</div>
+  <div class="gn-txt">今天已经结束了。</div>
+  <div class="gn-sub">把能量还给自己。</div>
+  <div class="gn-sub">好好休息。</div>
+  <button class="gn-dismiss" onclick="document.getElementById('gn-ov').classList.remove('show')">嗯，晚安。</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── CONSTANTS ─── */
+const GREETINGS=['今天也不用一下子变得很厉害。','先把今天过好就很好了。','你不需要解决所有事。','慢慢来，比较快。','今天也在建设自己的人生。','不焦虑，不内耗，做一件事。','稳定本身就是一种力量。','把注意力放回自己这里。'];
+const CALM=['现在的大脑可能只是累了。','不是所有问题都需要今晚解决。','先回到身体和呼吸。','你已经做得够多了。','思考不等于答案，行动才是。','把这个念头轻轻放下，明天再说。','此刻最需要的，是休息。'];
+const EMO={'平静':'😌','充实':'✨','开心':'😊','疲惫':'😴','焦虑':'😰','混乱':'🌀','低落':'🌧','期待':'🌤'};
+const GC={life:'#8FA68E',body:'#8FA68E',work:'#A8B5C1',mind:'#C4A882'};
+const ENC=['✓ 好的。','完成了，继续。','一步一步来。','✓ 很好。','稳稳的。'];
+const DEFAULT_GROUPS=[
+  {id:'life',emoji:'🌿',name:'生活',items:[{k:'wake',l:'按时起床',c:true},{k:'sun',l:'晨间散步 / 晒太阳',c:true},{k:'bfast',l:'吃早餐',c:true},{k:'water',l:'喝水',c:false},{k:'wind',l:'睡前放松',c:false},{k:'sl12',l:'12点前睡觉',c:false}]},
+  {id:'body',emoji:'🌱',name:'身体正在恢复生命力',items:[{k:'walk',l:'快走',c:true},{k:'indoor',l:'室内 walking',c:true},{k:'stretch',l:'拉伸 / 瑜伽',c:false},{k:'neck',l:'肩颈放松',c:false}]},
+  {id:'work',emoji:'✦',name:'工作',items:[{k:'deep',l:'深度工作',c:true},{k:'sdown',l:'按时收工',c:true},{k:'learn',l:'学习 / 研究',c:false},{k:'data',l:'数据复盘',c:false},{k:'calmw',l:'非情绪化工作',c:false}]},
+  {id:'mind',emoji:'🌙',name:'心',items:[{k:'noph',l:'没有过度刷手机',c:true},{k:'norum',l:'没有陷入反复内耗',c:true},{k:'elog',l:'情绪记录',c:false},{k:'grat',l:'今日感恩',c:false},{k:'ack',l:'今日自我认可',c:false}]},
+];
+
+/* ─── STATE ─── */
+let groups, day, editMode=false, moreOpen={};
+
+function p2(n){return String(n).padStart(2,'0')}
+function fmtD(d){return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`}
+function todayKey(){return fmtD(new Date())}
+
+function loadGroups(){
+  const r=localStorage.getItem('rhy_groups');
+  if(r) try{return JSON.parse(r)}catch(e){}
+  const g=JSON.parse(JSON.stringify(DEFAULT_GROUPS));
+  localStorage.setItem('rhy_groups',JSON.stringify(g));
+  return g;
+}
+function saveGroups(){localStorage.setItem('rhy_groups',JSON.stringify(groups))}
+function loadDay(){
+  const r=localStorage.getItem('rhy_'+todayKey());
+  if(r) try{return JSON.parse(r)}catch(e){}
+  return {checks:{},things:['','',''],tdone:[false,false,false],emotion:'',eNote:'',self:'',sleep:{s:'23:00',e:'07:00'},nDone:'',nGood:'',nTmr:''};
+}
+function saveDay(){localStorage.setItem('rhy_'+todayKey(),JSON.stringify(day))}
+function getAllDays(){
+  const out={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.startsWith('rhy_2')){try{out[k.slice(4)]=JSON.parse(localStorage.getItem(k))}catch(e){}}
+  }
+  return out;
+}
+
+/* ─── RENDER GROUPS ─── */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function renderGroups(){
+  const wrap=document.getElementById('groups-wrap');
+  wrap.innerHTML='';
+  groups.forEach(g=>{
+    const done=g.items.filter(it=>day.checks[it.k]).length;
+    const total=g.items.length;
+    const pct=total?Math.round(done/total*100):0;
+    const isOpen=moreOpen[g.id];
+    const extra=g.items.filter(it=>!it.c);
+
+    const div=document.createElement('div');
+    div.className='cg'; div.id='cg-'+g.id;
+
+    const nameEl=editMode
+      ? `<input class="cg-name-inp" value="${esc(g.name)}" data-gid="${g.id}" onchange="renameGroup(this)">`
+      : `<span class="cg-name">${esc(g.name)}</span>`;
+    const moreEl=extra.length&&!editMode
+      ? `<button class="more-btn" onclick="toggleMore('${g.id}',event)">${isOpen?'收起':'更多'}</button>`
+      : '';
+
+    div.innerHTML=`
+      <div class="cg-head">
+        <div class="cg-l"><span class="cg-em">${g.emoji}</span>${nameEl}</div>
+        <div class="cg-r"><span class="cg-prog" id="prog-${g.id}">${done}/${total}</span>${moreEl}</div>
+      </div>
+      <div class="pb-wrap"><div class="pb"><div class="pbf" id="fill-${g.id}" style="width:${pct}%"></div></div></div>
+      <div class="ci-wrap" id="ci-${g.id}"></div>
+      ${editMode?`<div class="add-row" onclick="addItem('${g.id}')"><div class="add-icon">+</div><span>添加条目</span></div>`:''}
+    `;
+    wrap.appendChild(div);
+    renderItems(g,isOpen);
+  });
+
+  if(editMode){
+    const addG=document.createElement('div');
+    addG.style='padding:2px 0 6px';
+    addG.innerHTML=`<div class="add-row" style="background:var(--bg2);border-radius:var(--r);justify-content:center;margin:0" onclick="addGroup()"><div class="add-icon">+</div><span>添加分组</span></div>`;
+    wrap.appendChild(addG);
+  }
+}
+
+function renderItems(g,isOpen){
+  const wrap=document.getElementById('ci-'+g.id);
+  if(!wrap) return;
+  wrap.innerHTML='';
+  const core=g.items.filter(it=>it.c);
+  const extra=g.items.filter(it=>!it.c);
+  const color=GC[g.id]||'#8FA68E';
+
+  function mkItem(it){
+    const chk=day.checks[it.k];
+    if(editMode){
+      const row=document.createElement('div');
+      row.className='ci'; row.style.cursor='default';
+      row.innerHTML=`
+        <input class="ci-lbl-inp" value="${esc(it.l)}" data-gid="${g.id}" data-k="${it.k}" onchange="renameItem(this)">
+        <div class="core-wrap">
+          <input type="checkbox" ${it.c?'checked':''} data-gid="${g.id}" data-k="${it.k}" onchange="toggleCore(this)">
+          <label>默认</label>
+        </div>
+        <button class="ci-del" data-gid="${g.id}" data-k="${it.k}" onclick="delItem(this)">×</button>
+      `;
+      return row;
+    }
+    const row=document.createElement('div');
+    row.className='ci'+(chk?' on':'');
+    row.dataset.k=it.k; row.dataset.gid=g.id;
+    row.onclick=()=>toggleCheck(g.id,it.k);
+    row.innerHTML=`
+      <div class="ci-box${chk?' on':''}" style="${chk?`background:${color};border-color:${color}`:''}"></div>
+      <span class="ci-lbl">${esc(it.l)}</span>
+    `;
+    return row;
+  }
+
+  core.forEach(it=>wrap.appendChild(mkItem(it)));
+  if(extra.length){
+    const md=document.createElement('div');
+    md.className='more-items'+(isOpen||editMode?' open':'');
+    md.id='more-'+g.id;
+    extra.forEach(it=>md.appendChild(mkItem(it)));
+    wrap.appendChild(md);
+  }
+}
+
+/* ─── EDIT ─── */
+function toggleEdit(){
+  editMode=!editMode;
+  const btn=document.getElementById('edit-btn');
+  btn.textContent=editMode?'完成':'编辑';
+  btn.classList.toggle('on',editMode);
+  renderGroups();
+  if(!editMode) saveGroups();
+}
+function renameGroup(el){const g=groups.find(x=>x.id===el.dataset.gid);if(g)g.name=el.value}
+function renameItem(el){const g=groups.find(x=>x.id===el.dataset.gid);if(!g)return;const it=g.items.find(x=>x.k===el.dataset.k);if(it)it.l=el.value}
+function toggleCore(el){
+  const g=groups.find(x=>x.id===el.dataset.gid);if(!g)return;
+  const it=g.items.find(x=>x.k===el.dataset.k);if(it){it.c=el.checked;renderGroups()}
+}
+function delItem(el){
+  const g=groups.find(x=>x.id===el.dataset.gid);if(!g)return;
+  g.items=g.items.filter(x=>x.k!==el.dataset.k);
+  delete day.checks[el.dataset.k];
+  saveDay(); renderGroups();
+}
+function addItem(gid){
+  const g=groups.find(x=>x.id===gid);if(!g)return;
+  const k='c_'+Date.now();
+  g.items.push({k,l:'新条目',c:false});
+  renderGroups();
+  setTimeout(()=>{const inp=document.querySelector(`.ci-lbl-inp[data-k="${k}"]`);if(inp){inp.focus();inp.select()}},60);
+}
+function addGroup(){
+  const id='g_'+Date.now();
+  groups.push({id,emoji:'✦',name:'新分组',items:[]});
+  renderGroups();
+  setTimeout(()=>{const inp=document.querySelector(`.cg-name-inp[data-gid="${id}"]`);if(inp){inp.focus();inp.select()}},60);
+}
+function toggleMore(gid,ev){
+  ev&&ev.stopPropagation();
+  moreOpen[gid]=!moreOpen[gid];
+  const el=document.getElementById('more-'+gid);
+  const btn=document.querySelector(`#cg-${gid} .more-btn`);
+  if(el)el.classList.toggle('open',moreOpen[gid]);
+  if(btn)btn.textContent=moreOpen[gid]?'收起':'更多';
+}
+
+/* ─── CHECKS ─── */
+function toggleCheck(gid,k){
+  if(editMode)return;
+  day.checks[k]=!day.checks[k]; saveDay();
+  updateProgress();
+  const g=groups.find(x=>x.id===gid);
+  renderItems(g,moreOpen[gid]);
+  if(day.checks[k])showToast(ENC[Math.floor(Math.random()*ENC.length)]);
+}
+function updateProgress(){
+  let td=0,tt=0;
+  groups.forEach(g=>{
+    const done=g.items.filter(it=>day.checks[it.k]).length;
+    const total=g.items.length;
+    const pct=total?Math.round(done/total*100):0;
+    const f=document.getElementById('fill-'+g.id);
+    const p=document.getElementById('prog-'+g.id);
+    if(f)f.style.width=pct+'%';
+    if(p)p.textContent=done+'/'+total;
+    td+=done;tt+=total;
+  });
+  document.getElementById('done-n').textContent=td;
+  document.getElementById('total-n').textContent=tt;
+}
+
+/* ─── THINGS ─── */
+function initThings(){
+  document.querySelectorAll('.tinput').forEach(inp=>{
+    const i=+inp.dataset.i;
+    inp.value=day.things[i]||'';
+    if(day.tdone[i])applyTDone(i,true);
+    inp.addEventListener('input',()=>{day.things[i]=inp.value;saveDay()});
+  });
+  document.querySelectorAll('.tchk').forEach(btn=>{
+    const i=+btn.dataset.i;
+    btn.addEventListener('click',()=>{day.tdone[i]=!day.tdone[i];saveDay();applyTDone(i,day.tdone[i])});
+  });
+}
+function applyTDone(i,done){
+  const inp=document.querySelector(`.tinput[data-i="${i}"]`);
+  const btn=document.querySelector(`.tchk[data-i="${i}"]`);
+  if(inp)inp.classList.toggle('done',done);
+  if(btn)btn.classList.toggle('on',done);
+}
+
+/* ─── EMOTION ─── */
+function selEmo(el){
+  document.querySelectorAll('.emo-tag').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  day.emotion=el.dataset.v;
+  document.getElementById('mood-disp').textContent=EMO[day.emotion]||day.emotion;
+  saveDay();
+}
+function saveDayField(){
+  day.eNote=document.getElementById('emo-note').value;
+  day.self=document.getElementById('self-inp').value;
+  saveDay();
+}
+
+/* ─── SLEEP ─── */
+function parseTime(str){
+  // accepts: 2330 / 23:30 / 23.30 / 2300
+  const clean=str.trim().replace(/[.:，。\s]/g,':');
+  let h,m;
+  if(clean.includes(':')){
+    [h,m]=clean.split(':').map(Number);
+  } else if(clean.length===4){
+    h=parseInt(clean.slice(0,2));m=parseInt(clean.slice(2));
+  } else if(clean.length===3){
+    h=parseInt(clean.slice(0,1));m=parseInt(clean.slice(1));
+  } else {
+    h=parseInt(clean);m=0;
+  }
+  if(isNaN(h)||isNaN(m))return null;
+  if(h>23||m>59)return null;
+  return h*60+m;
+}
+function calcSleep(){
+  const sv=document.getElementById('sl-s').value;
+  const ev=document.getElementById('sl-e').value;
+  const durEl=document.getElementById('dur-n');
+  const unitEl=document.getElementById('dur-u');
+  if(!sv&&!ev){durEl.textContent='—';unitEl.textContent='';return}
+  const sm=parseTime(sv);
+  const em=parseTime(ev);
+  if(sm===null||em===null){durEl.textContent='—';unitEl.textContent='';return}
+  let mn=em-sm;if(mn<=0)mn+=1440;
+  durEl.textContent=(mn/60).toFixed(1);
+  unitEl.textContent=' 小时';
+  day.sleep={s:sv,e:ev};saveDay();
+}
+
+/* ─── NIGHT ─── */
+function saveNight(){
+  day.nDone=document.getElementById('nq-done').value;
+  day.nGood=document.getElementById('nq-good').value;
+  day.nTmr=document.getElementById('nq-tmr').value;
+  saveDay();
+}
+function closeDay(){
+  saveNight();
+  document.getElementById('gn-ov').classList.add('show');
+  document.body.classList.add('night');
+  document.getElementById('theme-meta').content='#1C1C1E';
+}
+
+/* ─── STREAK ─── */
+function calcStreak(){
+  const all=getAllDays();let s=0;const d=new Date();
+  for(let i=0;i<365;i++){
+    const k=fmtD(d);const rec=all[k];
+    if(!rec||Object.values(rec.checks||{}).filter(Boolean).length===0)break;
+    s++;d.setDate(d.getDate()-1);
+  }
+  return s;
+}
+
+/* ─── HISTORY PAGE ─── */
+const WDAY=['日','一','二','三','四','五','六'];
+function buildHistory(){
+  const all=getAllDays();
+  const list=document.getElementById('hist-list');
+  const keys=Object.keys(all).sort((a,b)=>b.localeCompare(a));
+  if(!keys.length){list.innerHTML='<div class="empty-hist">还没有记录。<br>今天开始吧。</div>';return}
+  list.innerHTML='';
+  keys.forEach(k=>{
+    const rec=all[k];
+    const d=new Date(k+'T00:00:00');
+    const wday=WDAY[d.getDay()];
+    const isToday=k===todayKey();
+    const done=Object.values(rec.checks||{}).filter(Boolean).length;
+    const total=groups.reduce((s,g)=>s+g.items.length,0);
+    const pct=total?Math.round(done/total*100):0;
+    const emoIco=rec.emotion?EMO[rec.emotion]||rec.emotion:'';
+    const thingsDone=(rec.things||[]).filter((_,i)=>rec.tdone&&rec.tdone[i]&&rec.things[i]).length;
+
+    const div=document.createElement('div');
+    div.className='hist-day';
+    const dateLabel=isToday?`今天 · ${k}`:`${k} · 星期${wday}`;
+
+    div.innerHTML=`
+      <div class="hd-head" onclick="toggleHistDay(this)">
+        <div class="hd-date">${dateLabel}</div>
+        <div class="hd-meta">
+          <span class="hd-emo">${emoIco}</span>
+          <span class="hd-pct">${pct}%</span>
+          <span class="hd-arrow">›</span>
+        </div>
+      </div>
+      <div class="hd-body">
+        ${buildHistBody(rec)}
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function buildHistBody(rec){
+  let html='';
+  // things
+  const things=(rec.things||[]).filter(t=>t);
+  if(things.length){
+    html+=`<div class="hd-sec"><div class="hd-sec-t">三件事</div>`;
+    things.forEach((t,i)=>{
+      const done=rec.tdone&&rec.tdone[i];
+      html+=`<div class="hd-thing${done?' done':''}">${done?'✓ ':''} ${esc(t)}</div>`;
+    });
+    html+='</div>';
+  }
+  // checks
+  const doneKeys=Object.keys(rec.checks||{}).filter(k=>rec.checks[k]);
+  if(doneKeys.length){
+    html+=`<div class="hd-sec"><div class="hd-sec-t">完成的事</div><div class="hd-chips">`;
+    doneKeys.forEach(k=>{
+      let lbl=k;
+      groups.forEach(g=>{ const it=g.items.find(x=>x.k===k); if(it)lbl=it.l; });
+      html+=`<div class="hd-chip">${esc(lbl)}</div>`;
+    });
+    html+='</div></div>';
+  }
+  // emotion
+  if(rec.emotion){
+    html+=`<div class="hd-sec"><div class="hd-sec-t">情绪</div>`;
+    html+=`<div style="display:flex;align-items:center;gap:6px"><span style="font-size:18px">${EMO[rec.emotion]||''}</span><span style="font-size:13px;color:var(--t2);font-weight:300">${esc(rec.emotion)}</span></div>`;
+    if(rec.eNote) html+=`<div class="hd-note">${esc(rec.eNote)}</div>`;
+    html+='</div>';
+  }
+  // self
+  if(rec.self) html+=`<div class="hd-sec"><div class="hd-sec-t">为自己做了</div><div class="hd-note">${esc(rec.self)}</div></div>`;
+  // sleep
+  if(rec.sleep&&rec.sleep.s&&rec.sleep.e){
+    const sm=parseTime(rec.sleep.s);
+    const em=parseTime(rec.sleep.e);
+    if(sm!==null&&em!==null){
+      let mn=em-sm;if(mn<=0)mn+=1440;
+      html+=`<div class="hd-sec"><div class="hd-sec-t">睡眠</div><span class="hd-sleep">${(mn/60).toFixed(1)}h</span><span style="font-size:11px;color:var(--t3);margin-left:4px">${rec.sleep.s} → ${rec.sleep.e}</span></div>`;
+    }
+  }
+  // night notes
+  if(rec.nDone||rec.nGood){
+    html+=`<div class="hd-sec"><div class="hd-sec-t">晚间记录</div>`;
+    if(rec.nDone) html+=`<div class="hd-note">${esc(rec.nDone)}</div>`;
+    if(rec.nGood) html+=`<div class="hd-note" style="margin-top:4px">✦ ${esc(rec.nGood)}</div>`;
+    html+='</div>';
+  }
+  return html||'<div style="font-size:12px;color:var(--t3);font-style:italic;padding:8px 0">这一天没有留下记录。</div>';
+}
+
+function toggleHistDay(el){
+  const body=el.nextElementSibling;
+  const arrow=el.querySelector('.hd-arrow');
+  const open=body.classList.toggle('open');
+  if(arrow)arrow.classList.toggle('open',open);
+}
+
+/* ─── REVIEW ─── */
+function buildReview(){
+  const all=getAllDays();
+  // heatmap
+  const hm=document.getElementById('heatmap');hm.innerHTML='';
+  for(let i=29;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const k=fmtD(d);const rec=all[k];
+    const done=rec?Object.values(rec.checks||{}).filter(Boolean).length:0;
+    const cell=document.createElement('div');cell.className='hm-cell';
+    const p=done/20;
+    if(p>.6)cell.classList.add('l4');else if(p>.4)cell.classList.add('l3');else if(p>.2)cell.classList.add('l2');else if(p>0)cell.classList.add('l1');
+    cell.title=k+' · '+done+'项';hm.appendChild(cell);
+  }
+  // sleep week
+  const sw=document.getElementById('wk-sleep');sw.innerHTML='';
+  let totH=0,cnt=0,b12=0;
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const k=fmtD(d);const rec=all[k];const today=i===0;
+    let hrs=null;
+    if(rec?.sleep?.s&&rec?.sleep?.e){
+      const sm2=parseTime(rec.sleep.s);
+      const em2=parseTime(rec.sleep.e);
+      if(sm2!==null&&em2!==null){
+        let mn=em2-sm2;if(mn<=0)mn+=1440;
+        hrs=+(mn/60).toFixed(1);totH+=hrs;cnt++;
+        if(sm2<23*60)b12++;
+      }
+    }
+    const dv=document.createElement('div');dv.className='wk-day';
+    dv.innerHTML=`<div class="wd-lbl">${WDAY[d.getDay()]}</div><div class="wd-dot${today?' today':''}${hrs?' has':''}">${hrs||''}</div>`;
+    sw.appendChild(dv);
+  }
+  document.getElementById('avg-sl').textContent=cnt?+(totH/cnt).toFixed(1):'—';
+  document.getElementById('b12').textContent=cnt?b12:'—';
+  document.getElementById('str-rv').textContent=calcStreak();
+  // body week
+  const bw=document.getElementById('wk-body');bw.innerHTML='';
+  const bkeys=['walk','indoor','stretch','neck'];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const k=fmtD(d);const rec=all[k];const today=i===0;
+    const done=rec?bkeys.filter(bk=>rec.checks?.[bk]).length:0;
+    const dv=document.createElement('div');dv.className='wk-day';
+    dv.innerHTML=`<div class="wd-lbl">${WDAY[d.getDay()]}</div><div class="wd-dot${today?' today':''}${done>0?' has':''}">${done||''}</div>`;
+    bw.appendChild(dv);
+  }
+  // emotion
+  const er=document.getElementById('emo-review');
+  const emos=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const rec=all[fmtD(d)];
+    if(rec?.emotion)emos.push({date:fmtD(d),v:rec.emotion,n:rec.eNote});
+  }
+  if(!emos.length){er.innerHTML='<div style="font-size:12px;color:var(--t3);font-style:italic;font-family:\'Lora\',serif">记录几天后这里会出现情绪轨迹。</div>';return}
+  er.innerHTML=emos.map(e=>`<div style="display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:.5px solid rgba(0,0,0,.05)"><span style="font-size:17px">${EMO[e.v]||'·'}</span><div><div style="font-size:10px;color:var(--t3);margin-bottom:1px">${e.date}</div><div style="font-size:13px;color:var(--t2);font-weight:300">${e.v}${e.n?' · '+e.n:''}</div></div></div>`).join('');
+}
+
+/* ─── TABS ─── */
+function switchTab(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ti').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('scroll').scrollTop=0;
+  if(id==='review')buildReview();
+  if(id==='history')buildHistory();
+}
+
+/* ─── OVERLAYS ─── */
+function showCalm(){
+  document.getElementById('calm-msg').textContent=CALM[Math.floor(Math.random()*CALM.length)];
+  document.getElementById('calm-ov').classList.add('show');
+}
+function closeOv(id){document.getElementById(id).classList.remove('show')}
+
+/* ─── TOAST ─── */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+/* ─── INSTALL HINT ─── */
+function checkInstallHint(){
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone=window.navigator.standalone===true;
+  const dismissed=localStorage.getItem('rhy_hint_dismissed');
+  if(isIOS&&!isStandalone&&!dismissed){
+    document.getElementById('install-banner').classList.add('show');
+    document.querySelector('.install-close').onclick=function(){
+      this.closest('.install-banner').classList.remove('show');
+      localStorage.setItem('rhy_hint_dismissed','1');
+    };
+  }
+}
+
+/* ─── INIT ─── */
+function init(){
+  groups=loadGroups();
+  day=loadDay();
+  const now=new Date();
+  document.getElementById('date-line').textContent=`${now.getFullYear()} 年 ${now.getMonth()+1} 月 ${now.getDate()} 日 · 星期${WDAY[now.getDay()]}`;
+  document.getElementById('night-dl').textContent=`${now.getMonth()+1} 月 ${now.getDate()} 日`;
+  document.getElementById('greeting').textContent=GREETINGS[Math.floor(Math.random()*GREETINGS.length)];
+  renderGroups();
+  updateProgress();
+  initThings();
+  if(day.emotion){
+    const tag=document.querySelector(`.emo-tag[data-v="${day.emotion}"]`);
+    if(tag){tag.classList.add('on');document.getElementById('mood-disp').textContent=EMO[day.emotion]||day.emotion}
+  }
+  document.getElementById('emo-note').value=day.eNote||'';
+  document.getElementById('self-inp').value=day.self||'';
+  document.getElementById('sl-s').value=day.sleep?.s||'';
+  document.getElementById('sl-e').value=day.sleep?.e||'';
+  calcSleep();
+  document.getElementById('nq-done').value=day.nDone||'';
+  document.getElementById('nq-good').value=day.nGood||'';
+  document.getElementById('nq-tmr').value=day.nTmr||'';
+  document.getElementById('streak-n').textContent=calcStreak();
+  checkInstallHint();
+}
+
+/* ─── SERVICE WORKER ─── */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+init();
+</script>
+</body>
+</html>
